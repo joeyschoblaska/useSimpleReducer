@@ -1,16 +1,5 @@
 import { useReducer } from "react";
 
-// could I turn this into a hook that creates a generic reducer?
-// * implements added / changed / deleted in predictable way
-//   * each one is exported as a function
-//   * eg: { items, added } = useSimpleReducer([])
-//         added({ id: 1, text: "hello" })
-// * each can be overridden
-// * conventional dispatch functions are also implemented in a way that's
-//   simple to call from component
-// * is this similar? https://github.com/immerjs/use-immer#useimmerreducer
-// * bog reducer: a bog-standard reducer
-
 interface BaseItemType {
   id: number;
 }
@@ -68,7 +57,20 @@ const useSimpleReducer = <ItemType extends BaseItemType>(
   initialItems: ItemType[]
 ) => {
   const [items, dispatch] = useReducer(buildReducer<ItemType>(), initialItems);
-  return { items, dispatch };
+
+  const added = (item: ItemType) => {
+    dispatch({ type: ActionKind.ADDED, item });
+  };
+
+  const changed = (id: number, item: ItemType) => {
+    dispatch({ type: ActionKind.CHANGED, id, item });
+  };
+
+  const deleted = (id: number) => {
+    dispatch({ type: ActionKind.DELETED, id });
+  };
+
+  return { items, dispatch, added, changed, deleted };
 };
 
 export default useSimpleReducer;

@@ -1,6 +1,6 @@
 import AddTask from "./AddTask.jsx";
 import TaskList from "./TaskList.jsx";
-import useSimpleReducer, { ActionKind } from "./useSimpleReducer";
+import useSimpleReducer from "./useSimpleReducer";
 
 interface TaskType {
   id: number;
@@ -9,32 +9,27 @@ interface TaskType {
 }
 
 export default function TaskApp() {
-  const { items: tasks, dispatch } = useSimpleReducer(initialTasks);
+  const {
+    items: tasks,
+    added,
+    changed,
+    deleted,
+  } = useSimpleReducer(initialTasks);
 
   function handleAddTask(text: string) {
-    dispatch({
-      type: ActionKind.ADDED,
-      item: {
-        id: nextId++,
-        text: text,
-        done: false,
-      },
+    added({
+      id: nextId++,
+      text: text,
+      done: false,
     });
   }
 
   function handleChangeTask(task: TaskType) {
-    dispatch({
-      type: ActionKind.CHANGED,
-      id: task.id,
-      item: task,
-    });
+    changed(task.id, task);
   }
 
   function handleDeleteTask(taskId: number) {
-    dispatch({
-      type: ActionKind.DELETED,
-      id: taskId,
-    });
+    deleted(taskId);
   }
 
   return (
