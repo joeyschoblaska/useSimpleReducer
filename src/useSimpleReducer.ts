@@ -11,40 +11,63 @@ import { useReducer } from "react";
 // * is this similar? https://github.com/immerjs/use-immer#useimmerreducer
 // * bog reducer: a bog-standard reducer
 
-const buildReducer = () => {
-  return (items, action) => {
+interface BaseItemType {
+  id: number;
+}
+
+export enum ActionKind {
+  ADDED = "added",
+  CHANGED = "changed",
+  DELETED = "deleted",
+}
+
+const buildReducer = <ItemType extends BaseItemType>() => {
+  interface AddedActionType {
+    type: ActionKind.ADDED;
+    item: ItemType;
+  }
+
+  interface ChangedActionType {
+    type: ActionKind.CHANGED;
+    id: number;
+    item: ItemType;
+  }
+
+  interface DeletedActionType {
+    type: ActionKind.DELETED;
+    id: number;
+  }
+
+  type ActionType = AddedActionType | ChangedActionType | DeletedActionType;
+
+  return (items: ItemType[], action: ActionType): ItemType[] => {
     switch (action.type) {
-      case "added": {
-        return [
-          ...items,
-          {
-            id: action.id,
-            text: action.text,
-            done: false,
-          },
-        ];
+      case ActionKind.ADDED: {
+        return [...items, action.item];
       }
-      case "changed": {
+      case ActionKind.CHANGED: {
         return items.map((i) => {
-          if (i.id === action.task.id) {
-            return action.task;
+          if (i.id === action.item.id) {
+            return action.item;
           } else {
             return i;
           }
         });
       }
-      case "deleted": {
+      case ActionKind.DELETED: {
         return items.filter((i) => i.id !== action.id);
       }
       default: {
-        throw Error("Unknown action: " + action.type);
+        throw Error("Unknown action");
       }
     }
   };
 };
 
-const useSimpleReducer = (initialItems) => {
-  const [items, dispatch] = useReducer(buildReducer(), initialItems);
+const useSimpleReducer = <ItemType extends BaseItemType>(
+  initialItems: ItemType[]
+) => {
+  const [items, dispatch] = useReducer(buildReducer<ItemType>(), initialItems);
   return { items, dispatch };
 };
 
